@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slither.io Clone - Battle Royale</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #0F1419;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            position: relative;
+        }
+        #gameCanvas {
+            border: 2px solid #4CAF50;
+            background-color: #1E252B;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3e8e41;
+        }
+        #minimap {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 150px;
+            height: 150px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #4CAF50;
+        }
+        #leaderboard {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 180px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #4CAF50;
+            border-radius: 5px;
+        }
+        #leaderboard h3 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 16px;
+            color: #4CAF50;
+        }
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            font-size: 14px;
+        }
+        .player-name {
+            display: flex;
+            align-items: center;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .color-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        #statusMessage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            pointer-events: none;
+        }
+        #stats {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            display: flex;
+            gap: 10px;
+        }
+        .menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 10;
+        }
+        .menu h1 {
+            color: #4CAF50;
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        .menu p {
+            color: #ccc;
+            text-align: center;
+            margin-bottom: 20px;
+            max-width: 600px;
+        }
+        .menu input {
+            padding: 10px;
+            width: 300px;
+            border: 2px solid #4CAF50;
+            background-color: #1E252B;
+            color: white;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .menu button {
+            width: 300px;
+            padding: 15px;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        .instructions {
+            margin-top: 20px;
+            color: #aaa;
+            font-size: 14px;
+            text-align: center;
+        }
+        .food-orb {
+            position: absolute;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .booster-active {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: yellow;
+            font-weight: bold;
+            padding: 5px 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="startMenu" class="menu">
+        <h1>Slither.io Clone</h1>
+        <p>Battle Royale Mode - Grow your snake by collecting orbs, but be careful... your snake will shrink over time! Last snake standing wins.</p>
+        <input type="text" id="playerNameInput" placeholder="Enter your nickname" maxlength="15">
+        <button id="playButton">Play</button>
+        <button id="spectateButton">Spectate</button>
+        <div class="instructions">
+            <p>Controls: Move mouse to steer your snake<br>
+            Hold left mouse button or space bar to use speed boost<br>
+            Collect colored orbs for special abilities</p>
+        </div>
+    </div>
+
+    <div class="game-container hidden" id="gameContainer">
+        <canvas id="gameCanvas" width="1200" height="800"></canvas>
+        <canvas id="minimap" width="150" height="150"></canvas>
+        
+        <div id="leaderboard">
+            <h3>Leaderboard</h3>
+            <div id="leaderboardContent"></div>
+        </div>
+        
+        <div id="stats">
+            <div id="lengthStat">Length: 0</div>
+            <div id="killsStat">Kills: 0</div>
+        </div>
+        
+        <div id="statusMessage"></div>
+        <div id="boosterActive" class="booster-active hidden">BOOST ACTIVE</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.4.7/peerjs.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
